@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - LabEquip</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        
+        .background-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .background-container::before { content: ''; position: absolute; width: 100%; height: 100%; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="flask" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><path d="M8 15 L12 15 L11 18 L9 18 Z" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23flask)"/></svg>'); animation: float 20s infinite linear; }
+        
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(-20px, -20px); } }
+
+        .header { background: rgba(255, 255, 255, 0.95); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 15px; }
+        .logo i { font-size: 2rem; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo h1 { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8rem; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+
+        .nav-container { background: rgba(255, 255, 255, 0.9); margin: 1rem 2rem; border-radius: 15px; padding: 1rem; }
+        .nav-tabs { display: flex; gap: 10px; list-style: none; }
+        .nav-tabs a { padding: 12px 24px; text-decoration: none; color: #666; border-radius: 10px; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; }
+        .nav-tabs a.active, .nav-tabs a:hover { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+
+        .bookings-container { padding: 0 2rem 2rem 2rem; }
+        .bookings-header { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; }
+        .tabs { display: flex; gap: 10px; margin-top: 1rem; }
+        .tab { padding: 10px 20px; background: #f8f9fa; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+        .tab.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+
+        .booking-cards { display: grid; gap: 20px; }
+        .booking-card { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 1.5rem; transition: all 0.3s ease; border-left: 4px solid; }
+        .booking-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); }
+        .booking-card.active { border-left-color: #28a745; }
+        .booking-card.pending { border-left-color: #ffc107; }
+        .booking-card.completed { border-left-color: #6c757d; }
+
+        .booking-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; }
+        .booking-status { padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-completed { background: #e2e3e5; color: #383d41; }
+
+        .booking-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .detail-group { display: flex; flex-direction: column; gap: 5px; }
+        .detail-label { font-size: 0.8rem; color: #666; font-weight: 500; }
+        .detail-value { font-weight: 600; color: #333; }
+
+        .action-buttons { display: flex; gap: 10px; margin-top: 1rem; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn:hover { transform: translateY(-2px); }
+
+        .empty-state { text-align: center; padding: 3rem; color: white; }
+        .empty-state i { font-size: 4rem; margin-bottom: 1rem; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="background-container"></div>
+
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-calendar-check"></i>
+            <h1>My Bookings</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">JS</div>
+            <div>
+                <div id="userName">John Student</div>
+                <div id="userRole" style="font-size: 0.8rem; color: #666;">Student</div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav-container">
+    <ul class="nav-tabs">
+        <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="equipment.html"><i class="fas fa-search"></i> Browse Equipment</a></li>
+        <li><a href="bookings.html" class="active"><i class="fas fa-history"></i> My Bookings</a></li>
+        <li><a href="admin.html"><i class="fas fa-cog"></i> Admin Panel</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+    </nav>
+
+    <main class="bookings-container">
+        <div class="bookings-header">
+            <h2>📋 My Equipment Bookings</h2>
+            <p>Manage your current reservations and view booking history</p>
+            <div class="tabs">
+                <button class="tab active" onclick="filterBookings('active')">Active (2)</button>
+                <button class="tab" onclick="filterBookings('pending')">Pending (1)</button>
+                <button class="tab" onclick="filterBookings('completed')">Completed (3)</button>
+            </div>
+        </div>
+
+        <div class="booking-cards" id="bookingCards">
+            <!-- Bookings will load here -->
+        </div>
+    </main>
+
+    <script>
+        const bookingsData = [
+            { id: 1, equipment: "Digital Microscope", status: "active", bookingDate: "2024-01-15", dueDate: "2024-01-20", location: "Biology Lab", purpose: "Research" },
+            { id: 2, equipment: "Centrifuge Machine", status: "active", bookingDate: "2024-01-16", dueDate: "2024-01-18", location: "Chemistry Lab", purpose: "Sample Prep" },
+            { id: 3, equipment: "PCR Thermal Cycler", status: "pending", bookingDate: "2024-01-18", dueDate: "2024-01-25", location: "Genetics Lab", purpose: "DNA Analysis" },
+            { id: 4, equipment: "UV-Vis Spectrometer", status: "completed", bookingDate: "2024-01-10", dueDate: "2024-01-12", location: "Physics Lab", purpose: "Light Analysis" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = JSON.parse(localStorage.getItem('currentUser') || '{"username":"Guest","role":"Student"}');
+            document.getElementById('userName').textContent = userData.username;
+            document.getElementById('userRole').textContent = userData.role;
+            document.getElementById('userAvatar').textContent = userData.username.charAt(0).toUpperCase();
+            displayBookings('active');
+        });
+
+        function displayBookings(filter) {
+            const container = document.getElementById('bookingCards');
+            const filtered = bookingsData.filter(booking => filter === 'all' ? true : booking.status === filter);
+            
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event?.target.classList.add('active');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>No ${filter} bookings</h3><p>${filter === 'active' ? 'Browse equipment to make reservations!' : 'No records found'}</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(booking => `
+                <div class="booking-card ${booking.status}">
+                    <div class="booking-header">
+                        <div><h3>${booking.equipment}</h3><p>${booking.location}</p></div>
+                        <span class="booking-status status-${booking.status}">${booking.status.toUpperCase()}</span>
+                    </div>
+                    <div class="booking-details">
+                        <div class="detail-group"><span class="detail-label">Booking Date</span><span class="detail-value">${new Date(booking.bookingDate).toLocaleDateString()}</span></div>
+                        <div class="detail-group"><span class="detail-label">Due Date</span><span class="detail-value">${new Date(booking.dueDate).toLocaleDateString()}</span></div>
+                        <div class="detail-group"><span class="detail-label">Purpose</span><span class="detail-value">${booking.purpose}</span></div>
+                    </div>
+                    <div class="action-buttons">
+                        ${booking.status === 'active' ? `<button class="btn btn-success" onclick="returnEquipment(${booking.id})"><i class="fas fa-undo"></i> Return</button>` : ''}
+                        ${booking.status === 'pending' ? `<button class="btn btn-warning" onclick="cancelBooking(${booking.id})"><i class="fas fa-times"></i> Cancel</button>` : ''}
+                        <button class="btn btn-primary" onclick="viewDetails(${booking.id})"><i class="fas fa-info-circle"></i> Details</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBookings(filter) { displayBookings(filter); }
+        function returnEquipment(id) { alert(`Equipment returned successfully!`); }
+        function cancelBooking(id) { alert(`Booking cancelled!`); }
+        function viewDetails(id) { alert(`Booking details for ID: ${id}`); }
+    </script>
+    <script>
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Remove session and redirect to login
+            localStorage.removeItem('currentSession');
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+</body>
+</html>

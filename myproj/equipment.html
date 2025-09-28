@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Catalog - LabEquip</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Import all the same base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .background-container::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="flask" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><path d="M8 15 L12 15 L11 18 L9 18 Z" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23flask)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-20px, -20px); }
+        }
+
+        /* Header & Navigation (same as dashboard) */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-container {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 1rem 2rem;
+            border-radius: 15px;
+            padding: 1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            list-style: none;
+        }
+
+        .nav-tabs a {
+            padding: 12px 24px;
+            text-decoration: none;
+            color: #666;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tabs a.active,
+        .nav-tabs a:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Equipment Catalog Specific Styles */
+        .catalog-header {
+            background: rgba(255, 255, 255, 0.95);
+            margin: 1rem 2rem;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            margin-top: 1rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .filter-select {
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            background: white;
+            font-size: 1rem;
+        }
+
+        .reset-btn {
+            padding: 12px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #5a6268;
+        }
+
+        /* Equipment Grid */
+        .equipment-catalog {
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .catalog-stats {
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .equipment-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .equipment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .equipment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .equipment-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-available { background: #d4edda; color: #155724; }
+        .status-in-use { background: #fff3cd; color: #856404; }
+        .status-maintenance { background: #f8d7da; color: #721c24; }
+
+        .equipment-details {
+            margin: 1rem 0;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .borrow-btn {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .borrow-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .borrow-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .details-btn {
+            padding: 10px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .details-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="background-container"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-microscope"></i>
+            <h1>Equipment Catalog</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">JS</div>
+            <div>
+                <div id="userName">John Student</div>
+                <div id="userRole" style="font-size: 0.8rem; color: #666;">Student</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-container">
+    <ul class="nav-tabs">
+        <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="equipment.html" class="active"><i class="fas fa-search"></i> Browse Equipment</a></li>
+        <li><a href="bookings.html"><i class="fas fa-history"></i> My Bookings</a></li>
+        <li><a href="admin.html"><i class="fas fa-cog"></i> Admin Panel</a></li>
+        <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+    </nav>
+    <!-- Search & Filters -->
+    <div class="catalog-header">
+        <h2>🔬 Laboratory Equipment Catalog</h2>
+        <p>Browse and reserve scientific equipment for your research</p>
+        
+        <div class="search-filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search equipment...">
+            </div>
+            
+            <select class="filter-select" id="typeFilter">
+                <option value="">All Types</option>
+                <option value="microscope">Microscopes</option>
+                <option value="centrifuge">Centrifuges</option>
+                <option value="spectrometer">Spectrometers</option>
+                <option value="incubator">Incubators</option>
+            </select>
+            
+            <select class="filter-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="available">Available</option>
+                <option value="in-use">In Use</option>
+                <option value="maintenance">Maintenance</option>
+            </select>
+            
+            <button class="reset-btn" id="resetFilters">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Equipment Grid -->
+    <main class="equipment-catalog">
+        <div class="catalog-stats">
+            <h3 id="resultsCount">Loading equipment...</h3>
+            <div id="sortOptions">
+                <select class="filter-select" id="sortSelect">
+                    <option value="name">Sort by Name</option>
+                    <option value="type">Sort by Type</option>
+                    <option value="status">Sort by Status</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="equipment-grid" id="equipmentGrid">
+            <!-- Equipment cards will be generated by JavaScript -->
+        </div>
+    </main>
+
+    <script>
+        // Equipment Data
+        const equipmentData = [
+            { id: 1, name: "Digital Microscope", type: "microscope", status: "available", location: "Biology Lab", specs: "1000x magnification", nextAvailable: "Now" },
+            { id: 2, name: "High-Speed Centrifuge", type: "centrifuge", status: "in-use", location: "Chemistry Lab", specs: "Max 6000 RPM", nextAvailable: "2:00 PM" },
+            { id: 3, name: "UV-Vis Spectrometer", type: "spectrometer", status: "available", location: "Physics Lab", specs: "200-800 nm range", nextAvailable: "Now" },
+            { id: 4, name: "PCR Thermal Cycler", type: "incubator", status: "maintenance", location: "Genetics Lab", specs: "96-well capacity", nextAvailable: "Tomorrow" },
+            { id: 5, name: "Electron Microscope", type: "microscope", status: "available", location: "Advanced Lab", specs: "50,000x magnification", nextAvailable: "Now" },
+            { id: 6, name: "Microcentrifuge", type: "centrifuge", status: "available", location: "Biochemistry Lab", specs: "Compact design", nextAvailable: "Now" },
+            { id: 7, name: "FTIR Spectrometer", type: "spectrometer", status: "in-use", location: "Chemistry Lab", specs: "Infrared analysis", nextAvailable: "4:30 PM" },
+            { id: 8, name: "CO2 Incubator", type: "incubator", status: "available", location: "Cell Culture Lab", specs: "Temperature control", nextAvailable: "Now" }
+        ];
+
+        // Load user data and initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = JSON.parse(localStorage.getItem('currentUser') || '{"username":"Guest","role":"Student"}');
+            
+            // Update user interface
+            document.getElementById('userName').textContent = userData.username;
+            document.getElementById('userRole').textContent = userData.role;
+            document.getElementById('userAvatar').textContent = userData.username.charAt(0).toUpperCase();
+
+            // Display equipment
+            displayEquipment(equipmentData);
+
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', filterEquipment);
+            document.getElementById('typeFilter').addEventListener('change', filterEquipment);
+            document.getElementById('statusFilter').addEventListener('change', filterEquipment);
+            document.getElementById('sortSelect').addEventListener('change', filterEquipment);
+            document.getElementById('resetFilters').addEventListener('click', resetFilters);
+        });
+
+        function displayEquipment(equipment) {
+            const grid = document.getElementById('equipmentGrid');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            grid.innerHTML = '';
+            resultsCount.textContent = `Showing ${equipment.length} equipment items`;
+
+            equipment.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'equipment-card';
+                card.innerHTML = `
+                    <div class="equipment-header">
+                        <i class="fas fa-${getEquipmentIcon(item.type)} equipment-icon"></i>
+                        <span class="status-badge status-${item.status}">${getStatusText(item.status)}</span>
+                    </div>
+                    
+                    <h3>${item.name}</h3>
+                    
+                    <div class="equipment-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Type:</span>
+                            <span>${getTypeText(item.type)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span>${item.location}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Specifications:</span>
+                            <span>${item.specs}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Available:</span>
+                            <span>${item.nextAvailable}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="borrow-btn" ${item.status !== 'available' ? 'disabled' : ''} 
+                                onclick="borrowEquipment(${item.id})">
+                            <i class="fas fa-calendar-plus"></i>
+                            ${item.status === 'available' ? 'Reserve Now' : 'Unavailable'}
+                        </button>
+                        <button class="details-btn" onclick="viewDetails(${item.id})">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterEquipment() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortBy = document.getElementById('sortSelect').value;
+
+            let filtered = equipmentData.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm) || 
+                                    item.location.toLowerCase().includes(searchTerm);
+                const matchesType = !typeFilter || item.type === typeFilter;
+                const matchesStatus = !statusFilter || item.status === statusFilter;
+                
+                return matchesSearch && matchesType && matchesStatus;
+            });
+
+            // Sort results
+            filtered.sort((a, b) => {
+                if (sortBy === 'name') return a.name.localeCompare(b.name);
+                if (sortBy === 'type') return a.type.localeCompare(b.type);
+                if (sortBy === 'status') return a.status.localeCompare(b.status);
+                return 0;
+            });
+
+            displayEquipment(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('sortSelect').value = 'name';
+            displayEquipment(equipmentData);
+        }
+
+        function getEquipmentIcon(type) {
+            const icons = {
+                'microscope': 'microscope',
+                'centrifuge': 'redo', // spinning icon
+                'spectrometer': 'chart-line',
+                'incubator': 'temperature-high'
+            };
+            return icons[type] || 'flask';
+        }
+
+        function getTypeText(type) {
+            const types = {
+                'microscope': 'Microscope',
+                'centrifuge': 'Centrifuge',
+                'spectrometer': 'Spectrometer',
+                'incubator': 'Incubator'
+            };
+            return types[type] || type;
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'available': 'Available',
+                'in-use': 'In Use',
+                'maintenance': 'Maintenance'
+            };
+            return statuses[status] || status;
+        }
+
+        function borrowEquipment(equipmentId) {
+            const equipment = equipmentData.find(item => item.id === equipmentId);
+            if (equipment && equipment.status === 'available') {
+                if (confirm(`Reserve ${equipment.name}?`)) {
+                    alert(`Success! ${equipment.name} has been reserved.`);
+                    // In real app, update equipment status via API
+                }
+            }
+        }
+
+        function viewDetails(equipmentId) {
+            const equipment = equipmentData.find(item => item.id === equipmentId);
+            alert(`Details for ${equipment.name}\n\nType: ${getTypeText(equipment.type)}\nLocation: ${equipment.location}\nSpecs: ${equipment.specs}\nStatus: ${getStatusText(equipment.status)}`);
+        }
+    </script>
+    <script>
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Remove session and redirect to login
+            localStorage.removeItem('currentSession');
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+</body>
+</html>

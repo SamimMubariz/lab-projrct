@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LabEquip</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Your existing beautiful styles remain the same */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; }
+        
+        .background-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: -2; }
+        .background-container::before { content: ''; position: absolute; width: 100%; height: 100%; background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="flask" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><path d="M8 15 L12 15 L11 18 L9 18 Z" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23flask)"/></svg>'); animation: float 20s infinite linear; }
+        
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(-20px, -20px); } }
+
+        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 100%; max-width: 420px; animation: slideUp 0.6s ease-out; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .logo-section { text-align: center; margin-bottom: 30px; }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; }
+        .logo i { font-size: 2.5rem; color: #667eea; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo h1 { font-size: 2.2rem; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #667eea; z-index: 1; }
+        .input-group input { width: 100%; padding: 15px 15px 15px 45px; border: 2px solid #e1e5e9; border-radius: 10px; font-size: 1rem; transition: all 0.3s ease; }
+        .input-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+
+        .login-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+
+        .error-message { color: #dc3545; text-align: center; margin-top: 10px; display: none; }
+        .demo-accounts { margin-top: 20px; padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 10px; }
+        .demo-accounts h4 { margin-bottom: 10px; color: #667eea; }
+        .demo-account { display: flex; justify-content: space-between; margin: 5px 0; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="lab-overlay"></div>
+    </div>
+    
+    <div class="container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-microscope"></i>
+                    <h1>LabEquip</h1>
+                </div>
+                <p>Laboratory Equipment Management System</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email address" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                
+                <div class="error-message" id="errorMessage">
+                    Invalid email or password. Please try again.
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In to Laboratory
+                </button>
+            </form>
+
+            <div class="demo-accounts">
+                <h4>Demo Accounts:</h4>
+                <div class="demo-account">
+                    <span>Admin: </span>
+                    <span><strong>admin@lab.edu</strong> / <strong>admin123</strong></span>
+                </div>
+                <div class="demo-account">
+                    <span>Professor: </span>
+                    <span><strong>prof@lab.edu</strong> / <strong>prof123</strong></span>
+                </div>
+                <div class="demo-account">
+                    <span>Student: </span>
+                    <span><strong>student@lab.edu</strong> / <strong>student123</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize User Database
+        function initializeUserDatabase() {
+            if (!localStorage.getItem('users')) {
+                const users = [
+                    {
+                        id: 1,
+                        email: 'admin@lab.edu',
+                        password: 'admin123',
+                        name: 'System Administrator',
+                        role: 'admin',
+                        department: 'IT',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        email: 'prof@lab.edu',
+                        password: 'prof123',
+                        name: 'Dr. Sarah Johnson',
+                        role: 'professor',
+                        department: 'Chemistry',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        email: 'student@lab.edu',
+                        password: 'student123',
+                        name: 'John Smith',
+                        role: 'student',
+                        department: 'Biology',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 4,
+                        email: 'tech@lab.edu',
+                        password: 'tech123',
+                        name: 'Mike Technician',
+                        role: 'technician',
+                        department: 'Engineering',
+                        status: 'active',
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        // Authentication Functions
+        function authenticateUser(email, password) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+            return user;
+        }
+
+        function loginUser(user) {
+            // Store session
+            const session = {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    department: user.department
+                },
+                loginTime: new Date().toISOString(),
+                token: generateToken()
+            };
+            
+            localStorage.setItem('currentSession', JSON.stringify(session));
+            return session;
+        }
+
+        function generateToken() {
+            return 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        }
+
+        function isLoggedIn() {
+            const session = localStorage.getItem('currentSession');
+            if (!session) return false;
+            
+            // Check if session is still valid (24 hours)
+            const sessionData = JSON.parse(session);
+            const loginTime = new Date(sessionData.loginTime);
+            const now = new Date();
+            const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+            
+            return hoursDiff < 24; // Session valid for 24 hours
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('currentSession');
+            window.location.href = 'index.html';
+        }
+
+        function getCurrentUser() {
+            const session = localStorage.getItem('currentSession');
+            return session ? JSON.parse(session).user : null;
+        }
+
+        function requireAuth() {
+            if (!isLoggedIn()) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        function requireRole(requiredRole) {
+            if (!requireAuth()) return false;
+            
+            const user = getCurrentUser();
+            if (user.role !== requiredRole && user.role !== 'admin') {
+                alert('Access denied. Required role: ' + requiredRole);
+                window.location.href = 'dashboard.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Initialize and handle login form
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUserDatabase();
+            
+            // Redirect if already logged in
+            if (isLoggedIn()) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorMessage = document.getElementById('errorMessage');
+                
+                // Clear previous error
+                errorMessage.style.display = 'none';
+                
+                // Validate inputs
+                if (!email || !password) {
+                    showError('Please fill in all fields');
+                    return;
+                }
+                
+                // Authenticate user
+                const user = authenticateUser(email, password);
+                if (user) {
+                    loginUser(user);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showError('Invalid email or password. Please try again.');
+                }
+            });
+
+            function showError(message) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+    <script>
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Remove session and redirect to login
+            localStorage.removeItem('currentSession');
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LabEquip</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Import all the same styles from login page */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Laboratory Background */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .background-container::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="flask" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="rgba(255,255,255,0.1)"/><path d="M8 15 L12 15 L11 18 L9 18 Z" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23flask)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-20px, -20px); }
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 1rem 2rem;
+            border-radius: 15px;
+            padding: 1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            list-style: none;
+        }
+
+        .nav-tabs a {
+            padding: 12px 24px;
+            text-decoration: none;
+            color: #666;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tabs a.active,
+        .nav-tabs a:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Equipment Grid */
+        .equipment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .equipment-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .equipment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .equipment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .equipment-icon {
+            font-size: 2rem;
+            color: #667eea;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-available { background: #d4edda; color: #155724; }
+        .status-in-use { background: #fff3cd; color: #856404; }
+        .status-maintenance { background: #f8d7da; color: #721c24; }
+
+        .borrow-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .borrow-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .borrow-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+
+    <!-- Authentication Script -->
+    <script>
+        // Authentication functions
+        function isLoggedIn() {
+            const session = localStorage.getItem('currentSession');
+            if (!session) return false;
+            
+            const sessionData = JSON.parse(session);
+            const loginTime = new Date(sessionData.loginTime);
+            const hoursDiff = (new Date() - loginTime) / (1000 * 60 * 60);
+            return hoursDiff < 24;
+        }
+
+        function getCurrentUser() {
+            const session = localStorage.getItem('currentSession');
+            return session ? JSON.parse(session).user : null;
+        }
+
+        function requireAuth() {
+            if (!isLoggedIn()) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Authentication check
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!requireAuth()) return;
+            
+            const user = getCurrentUser();
+            // Update UI with user info
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userRole').textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('displayUserName').textContent = user.name.split(' ')[0];
+            
+            // Show/hide admin panel based on role
+            const adminLink = document.querySelector('a[href="admin.html"]');
+            if (adminLink && user.role !== 'admin') {
+                adminLink.style.display = 'none';
+            }
+
+            // Add interactivity to borrow buttons
+            document.querySelectorAll('.borrow-btn:not(:disabled)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const equipmentName = this.closest('.equipment-card').querySelector('h4').textContent;
+                    if (confirm(`Borrow ${equipmentName}?`)) {
+                        this.textContent = 'Booking...';
+                        this.disabled = true;
+                        
+                        // Simulate booking process
+                        setTimeout(() => {
+                            alert(`Success! ${equipmentName} has been booked.`);
+                            this.innerHTML = '<i class="fas fa-check"></i> Booked Successfully';
+                        }, 1000);
+                    }
+                });
+            });
+        });
+
+        // Logout functionality
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentSession');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Background -->
+    <div class="background-container"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-microscope"></i>
+            <h1>LabEquip Dashboard</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">JS</div>
+            <div>
+                <div id="userName">John Student</div>
+                <div id="userRole" style="font-size: 0.8rem; color: #666;">Student</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <ul class="nav-tabs">
+            <li><a href="dashboard.html" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="equipment.html"><i class="fas fa-search"></i> Browse Equipment</a></li>
+            <li><a href="bookings.html"><i class="fas fa-history"></i> My Bookings</a></li>
+            <li><a href="admin.html"><i class="fas fa-cog"></i> Admin Panel</a></li>
+            <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2>Welcome back, <span id="displayUserName">John</span>! 👋</h2>
+            <p>Here's what's happening in your laboratory today.</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-microscope"></i>
+                <div class="stat-number">42</div>
+                <div class="stat-label">Total Equipment</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">28</div>
+                <div class="stat-label">Available Now</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-clock"></i>
+                <div class="stat-number">3</div>
+                <div class="stat-label">Your Active Bookings</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-tools"></i>
+                <div class="stat-number">5</div>
+                <div class="stat-label">Under Maintenance</div>
+            </div>
+        </div>
+
+        <!-- Recent Equipment -->
+        <h3 style="color: white; margin-bottom: 1rem;">Recently Used Equipment</h3>
+        <div class="equipment-grid">
+            <!-- Equipment Card 1 -->
+            <div class="equipment-card">
+                <div class="equipment-header">
+                    <i class="fas fa-microscope equipment-icon"></i>
+                    <span class="status-badge status-available">Available</span>
+                </div>
+                <h4>Digital Microscope</h4>
+                <p>Biology Lab • High-resolution imaging</p>
+                <button class="borrow-btn">Borrow Equipment</button>
+            </div>
+
+            <!-- Equipment Card 2 -->
+            <div class="equipment-card">
+                <div class="equipment-header">
+                    <i class="fas fa-vial equipment-icon"></i>
+                    <span class="status-badge status-in-use">In Use</span>
+                </div>
+                <h4>Centrifuge Machine</h4>
+                <p>Chemistry Lab • Max 6000 RPM</p>
+                <button class="borrow-btn" disabled>Currently Unavailable</button>
+            </div>
+
+            <!-- Equipment Card 3 -->
+            <div class="equipment-card">
+                <div class="equipment-header">
+                    <i class="fas fa-atom equipment-icon"></i>
+                    <span class="status-badge status-available">Available</span>
+                </div>
+                <h4>Spectrometer</h4>
+                <p>Physics Lab • Spectral analysis</p>
+                <button class="borrow-btn">Borrow Equipment</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
